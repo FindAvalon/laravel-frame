@@ -1,8 +1,11 @@
 <?php
 
-namespace Longway\Laravel\Frame\Console\Commands;
+namespace Longway\Frame\Console\Commands;
 
 use Illuminate\Console\Command;
+use Longway\Laravel\Frame\Services\FrameException;
+use Longway\Laravel\Frame\Services\FrameService;
+use Storage;
 
 class CreateWork extends Command
 {
@@ -17,6 +20,15 @@ class CreateWork extends Command
 
     public function handle()
     {
-        $this->info('ok');
+//        Storage::disk('local')->put('frame/file.txt', 'Contents');
+
+        $service = new FrameService();
+
+        try {
+            $service->create('apps.vote');
+            $this->info('创建成功');
+        } catch ( FrameException $e ) {
+            $this->error($e->getMessage());
+        }
     }
 }

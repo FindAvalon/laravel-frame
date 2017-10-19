@@ -1,6 +1,6 @@
 <?php
 
-namespace Longway\Laravel\Frame\Providers;
+namespace Longway\Frame\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Longway\Laravel\Frame\Console\Commands\CreateWork;

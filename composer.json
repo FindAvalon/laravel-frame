@@ -10,12 +10,13 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.0.0",
+    "behat/behat": "^3.2@dev",
     "prettus/l5-repository": "2.6.*"
   },
   "require-dev": {
     "phpunit/phpunit": "~4.3"
   },
   "autoload": {
-    "psr-4": {"Longway\\Laravel\\Frame\\": "src/"}
+    "psr-4": {"Longway\\Frame\\": "src/"}
   }
 }
