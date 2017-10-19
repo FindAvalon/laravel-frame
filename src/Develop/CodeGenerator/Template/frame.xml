@@ -1,0 +1,27 @@
+<frame name="{{name}}">
+
+    <model></model>
+    <repository></repository>
+
+    <presenters>
+        <item name="Admin"></item>
+    </presenters>
+    <requests>
+        <item name="Create"></item>
+    </requests>
+
+    <controller>
+        <method name="create">
+            <request bind="Create"></request>
+            <code>
+                $data = $request->only(['title', 'desc']);
+                $model = $this->model->create($data);
+            </code>
+            <response>
+                <presenter bind="Admin"></presenter>
+            </response>
+        </method>
+    </controller>
+
+    <exception></exception>
+</frame>
