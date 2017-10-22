@@ -2,9 +2,9 @@
 
 namespace Longway\Frame\Develop\CodeGenerator\Parser;
 
-use Exception;
+use Longway\Frame\Develop\DevelopException;
 
-class ParserException extends Exception
+class ParserException extends DevelopException
 {
 
 }

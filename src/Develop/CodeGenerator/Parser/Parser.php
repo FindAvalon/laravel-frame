@@ -2,9 +2,9 @@
 
 namespace Longway\Frame\Develop\CodeGenerator\Parser;
 
-
-class ParserService implements ParserInterface
+class Parser implements ParserInterface
 {
+
     public function load($filename)
     {
         if ( !file_exists($filename) ) {
@@ -20,6 +20,8 @@ class ParserService implements ParserInterface
 
     protected function parseTop($content)
     {
+        $originalContent = $content;
+        $content = $this->clearCode($content);
         preg_match_all('/[a-zA-Z_][\w]* {/', $content, $result);
 
         $data = [];
@@ -70,39 +72,113 @@ class ParserService implements ParserInterface
                 $subStartIndex = $startIndex + strlen($originalKey);
                 $subLength = $endIndex - $subStartIndex;
 
-                $str = substr($content, $subStartIndex, $subLength);
+                $str = substr($originalContent, $subStartIndex, $subLength);
                 $content = $this->strOnceReplace($content, $startIndex, $endIndex);
+                $originalContent = $this->strOnceReplace($originalContent, $startIndex, $endIndex);
 
+                if ( isset($data[$key]) ) {
+                    $data[$key.'@1'] = $data[$key];
+                    unset($data[$key]);
+                    $key .= '@2';
+                } else {
+                    $keys = array_keys($data);
+                    $newData = array_filter($keys, function ($item) use ($key) {
+                        if ( strpos($item, $key.'@') ) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    $num = count($newData);
 
+                    if ( $num > 0 ) {
+                        $key = $key.'@'.($num + 1);
+                    }
+                }
 
                 $data[$key] = $this->parseTop($str);
             }
 
         } else {
-            $content = trim($content);
-            if ( !$content ) {
-                return null;
-            }
+            return $this->parseParam($originalContent);
+        }
+        $content = trim(substr($content, 1, strlen($content) - 2));
+//        $originalContent = trim(substr($originalContent, 1, strlen($originalContent) - 2));
+        $data = array_merge($data, $this->parseParam($content));
 
-            $values = explode(';', $content);
-            $result = [];
-            foreach ( $values as $value ) {
+        return $data;
+    }
 
+    protected function parseParam($content)
+    {
+        $content = trim($content);
+        if ( !$content ) {
+            return [];
+        }
+        $data = [
+        ];
+
+        preg_match_all('/@[\w~.\s]+;/U', $content, $result);
+
+        if ( $result && count($result[0]) > 0 ) {
+            foreach ( $result[0] as $value ) {
                 if ( empty($value) ) {
                     continue;
                 }
+                $value = trim($value, ' @;');
 
                 if ( $index = strpos($value, ' ') ) {
                     $key = substr($value, 0, $index);
                     $value = substr($value, $index + 1, strlen($value) - $index);
-                    $result[$key] = explode(',', $value);
+                    $valueArr = explode(' ', $value);
+
+                    $tempArr = [];
+                    foreach ( $valueArr as $v ) {
+                        $temp = explode(':', $v);
+                        if ( count($temp) == 2 ) $tempArr[$temp[0]] = $temp[1];
+                        else $tempArr[] = $v;
+                    }
+                    $data['params'][$key] = $tempArr;
                 } else {
-                    throw new Exception('格式错误：'.$value);
+                    throw new ParserException('格式错误：'.$value);
                 }
             }
-            return $result;
         }
+
+
+        preg_match_all('/```[\w\W]+```/', $content, $result);
+
+        if ( $result && count($result[0]) > 0 ) {
+            $result = $result[0];
+
+            foreach ( $result as $value ) {
+                if ( empty($value) ) {
+                    continue;
+                }
+                $value = trim($value, " `\n");
+                $data['code'] = $value;
+            }
+        }
+
         return $data;
+    }
+
+    protected function clearCode($content)
+    {
+        $startIndex = strpos($content, '```');
+
+        if ( !$startIndex ) {
+            return $content;
+        }
+
+        $endIndex = strpos($content, '```', $startIndex + 1);
+
+        $search = substr($content, $startIndex, $endIndex + 3 - $startIndex);
+
+        if ( !$search )
+            return $content;
+
+        $content = str_replace($search, join('', array_fill(0, strlen($search), ' ')), $content);
+        return $this->clearCode($content);
     }
 
     private function strOnceReplace($content, $startIndex, $endIndex)
