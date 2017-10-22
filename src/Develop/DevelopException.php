@@ -1,6 +1,6 @@
 <?php
 
-namespace Longway\Laravel\Frame\Develop;
+namespace Longway\Frame\Develop;
 
 use Exception;
 
