@@ -2,37 +2,43 @@
 
 namespace Longway\Frame\Develop\CodeGenerator\Compiler\Module;
 
-class Model extends Base
+use Longway\Frame\Develop\CodeGenerator\Compiler\Compiler;
+
+class Model implements ModuleInterface
 {
-    const DIR = 'Models';
     const NAMESPACE_PREFIX = 'App\\Models';
 
     protected $name = 'model';
+    protected $data;
+    protected $compiler;
 
-    public function parse()
+    public function parse(Compiler $compiler, $data)
     {
+        $this->data = $data;
+        $this->compiler = $compiler;
+
         $result = [
             'fillable'      => $this->fillable(),
-            'scope'         => $this->scope(),
-            'belongs_to'    => $this->belongsTo()
+//            'scope'         => $this->scope(),
+//            'belongs_to'    => $this->belongsTo()
         ];
-        $result = array_merge($result, $this->info);
-        $content = $this->template('index', $result);
-
-        $path = $this->getDir().str_replace("\\", '/', $this->info['namespace']);
-        $filename = $this->info['name'].'.php';
-        if ( !file_exists($path) ) {
-            mkdir($path);
-        }
-        file_put_contents($path."/".$filename, $content);
+        $result = array_merge($result, $compiler->info);
+        $content = $compiler->template($this->name, 'index', $result);
+        dd($compiler->info['namespace']);
+//        $path = $this->getDir().str_replace("\\", '/', $this->info['namespace']);
+//        $filename = $this->info['name'].'.php';
+//        if ( !file_exists($path) ) {
+//            mkdir($path);
+//        }
+//        file_put_contents($path."/".$filename, $content);
 
     }
 
     protected function fillable()
     {
-        if ( $data = $this->data['params']['fillable'] ) {
+        if ( $data = $this->compiler->getParam($this->data, 'fillable') ) {
             $value = join("','", $data);
-            return ($this->template('fillable', [
+            return ($this->template($this->name, 'fillable', [
                 'value' => "'".$value."'"
             ]));
         }
