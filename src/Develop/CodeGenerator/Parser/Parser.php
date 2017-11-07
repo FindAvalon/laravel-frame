@@ -77,13 +77,13 @@ class Parser implements ParserInterface
                 $originalContent = $this->strOnceReplace($originalContent, $startIndex, $endIndex);
 
                 if ( isset($data[$key]) ) {
-                    $data[$key.'@1'] = $data[$key];
+                    $data[$key.'#1'] = $data[$key];
                     unset($data[$key]);
-                    $key .= '@2';
+                    $key .= '#2';
                 } else {
                     $keys = array_keys($data);
                     $newData = array_filter($keys, function ($item) use ($key) {
-                        if ( strpos($item, $key.'@') ) {
+                        if ( strpos($item, $key.'#') ) {
                             return true;
                         }
                         return false;
@@ -91,7 +91,7 @@ class Parser implements ParserInterface
                     $num = count($newData);
 
                     if ( $num > 0 ) {
-                        $key = $key.'@'.($num + 1);
+                        $key = $key.'#'.($num + 1);
                     }
                 }
 
@@ -117,7 +117,7 @@ class Parser implements ParserInterface
         $data = [
         ];
 
-        preg_match_all('/@[\w~.\s]+;/U', $content, $result);
+        preg_match_all('/@[\w\W]+;/U', $content, $result);
 
         if ( $result && count($result[0]) > 0 ) {
             foreach ( $result[0] as $value ) {
@@ -134,8 +134,12 @@ class Parser implements ParserInterface
                     $tempArr = [];
                     foreach ( $valueArr as $v ) {
                         $temp = explode(':', $v);
-                        if ( count($temp) == 2 ) $tempArr[$temp[0]] = $temp[1];
-                        else $tempArr[] = $v;
+                        if ( count($temp) == 2 ) {
+                            $tempArr[$temp[0]] = explode(',', $temp[1]);
+                        }
+                        else {
+                            $tempArr[] = $v;
+                        }
                     }
                     $data['params'][$key] = $tempArr;
                 } else {
