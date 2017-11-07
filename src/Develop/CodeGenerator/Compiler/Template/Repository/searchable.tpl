@@ -1,0 +1,3 @@
+protected $fieldSearchable = [
+        {{value}}
+    ];

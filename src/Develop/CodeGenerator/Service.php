@@ -3,7 +3,9 @@
 namespace Longway\Frame\Develop\CodeGenerator;
 
 use Longway\Frame\Develop\CodeGenerator\Cache\Cache;
+use Longway\Frame\Develop\CodeGenerator\Compiler\Module\Exception;
 use Longway\Frame\Develop\CodeGenerator\Compiler\Module\Model;
+use Longway\Frame\Develop\CodeGenerator\Compiler\Module\Repository;
 use Longway\Frame\Develop\CodeGenerator\Parser\Parser;
 use Longway\Frame\Develop\CodeGenerator\Source\Source;
 use Longway\Frame\Develop\CodeGenerator\Compiler\Compiler;
@@ -32,7 +34,9 @@ class Service
         }
         $data =  $this->parser->load($path);
 
+        $this->compiler->addModule('exception', new Exception());
         $this->compiler->addModule('model', new Model());
+        $this->compiler->addModule('repository', new Repository());
         $this->compiler->exec($data);
 //        $this->cache->set($path);
     }

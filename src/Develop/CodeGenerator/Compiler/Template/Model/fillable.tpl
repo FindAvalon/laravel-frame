@@ -1,3 +1,3 @@
 protected $fillable = [
-    {{value}}
-];
+        {{value}}
+    ];
